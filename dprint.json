@@ -20,6 +20,7 @@
     "/book/",
     "/src/",
     "/theme/*.hbs",
+    "/theme/book.js",
     "/third_party/",
     "target/"
   ],

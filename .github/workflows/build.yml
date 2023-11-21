@@ -110,11 +110,11 @@ jobs:
     strategy:
       matrix:
         language: ${{ fromJSON(needs.find-languages.outputs.languages) }}
-    env:
-      MDBOOK_BOOK__LANGUAGE: ${{ matrix.language }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # We need the full history for "git restore" below.
 
       - name: Setup Rust cache
         uses: ./.github/workflows/setup-rust-cache
@@ -135,17 +135,9 @@ jobs:
           MDBOOK_OUTPUT='{"xgettext": {"pot-file": "messages.pot"}}' mdbook build -d po
           msgfmt -o /dev/null --statistics po/messages.pot
 
-      - name: Build course
-        run: mdbook build
-
-      - name: Zip exercise templates
-        run: zip --recurse-paths ../html/comprehensive-rust-exercises.zip comprehensive-rust-exercises/
-        working-directory: book/exerciser
-
-      - name: Prepare book for upload
+      - name: Building ${{ matrix.language }} translation
         run: |
-          mv book/html book/comprehensive-rust-${{ matrix.language }}
-          rm -r book/exerciser
+          .github/workflows/build.sh ${{ matrix.language }} book/comprehensive-rust-${{ matrix.language }}
 
       # Upload the book now to retain it in case mdbook test fails.
       - name: Upload book
